@@ -716,42 +716,17 @@
     ctx.closePath();
     ctx.fill();
 
-    // Prompt and Pixel Logo Emblem (White line-art vector mark)
-    const lx = orangeX + 68;
-    const ly = orangeY + 95;
-
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 5.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // P shape
-    ctx.beginPath();
-    ctx.moveTo(lx, ly);
-    ctx.lineTo(lx, ly + 44);
-    ctx.moveTo(lx, ly);
-    ctx.lineTo(lx + 16, ly);
-    ctx.arcTo(lx + 26, ly, lx + 26, ly + 12, 10);
-    ctx.arcTo(lx + 26, ly + 22, lx + 16, ly + 22, 10);
-    ctx.lineTo(lx, ly + 22);
-    ctx.stroke();
-
-    // d shape
-    ctx.beginPath();
-    ctx.moveTo(lx + 34, ly - 8);
-    ctx.lineTo(lx + 34, ly + 36);
-    ctx.moveTo(lx + 34, ly + 36);
-    ctx.lineTo(lx + 18, ly + 36);
-    ctx.arcTo(lx + 8, ly + 36, lx + 8, ly + 24, 10);
-    ctx.arcTo(lx + 8, ly + 12, lx + 18, ly + 12, 10);
-    ctx.lineTo(lx + 34, ly + 12);
-    ctx.stroke();
-
-    // "Prompt and Pixel" white text below emblem
+    // Prompt & Pixel Brand Text inside Orange Container (clean text & block elements)
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '700 13px "Plus Jakarta Sans", "Inter", sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Prompt and Pixel', orangeX + 104, orangeY + 172);
+
+    // P|d brand mark
+    ctx.font = '800 36px "Plus Jakarta Sans", "Outfit", sans-serif';
+    ctx.fillText('P|d', orangeX + 104, orangeY + 90);
+
+    // "Prompt and Pixel" label text
+    ctx.font = '700 13px "Plus Jakarta Sans", "Inter", sans-serif';
+    ctx.fillText('Prompt and Pixel', orangeX + 104, orangeY + 148);
 
     ctx.restore();
   }
