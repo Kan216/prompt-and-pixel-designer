@@ -684,49 +684,51 @@
     ctx.restore();
   }
 
-  // Draw Bottom-Right Brand Badge (Prompt & Pixel logo + container)
+  // Draw Bottom-Right Brand Badge (Adjusted Color Blocks + Clean Text Only)
   function drawBrandBadge(ctx) {
     ctx.save();
 
     // Blue background shape at bottom-right
-    const blueX = 710;
-    const blueY = 890;
+    const blueX = 700;
+    const blueY = 885;
+    const blueR = 48;
+
     ctx.fillStyle = PALETTE.BLUE;
     ctx.beginPath();
-    ctx.moveTo(blueX + 40, blueY);
+    ctx.moveTo(blueX + blueR, blueY);
     ctx.lineTo(1080, blueY);
     ctx.lineTo(1080, 1080);
     ctx.lineTo(blueX, 1080);
-    ctx.lineTo(blueX, blueY + 40);
-    ctx.arcTo(blueX, blueY, blueX + 40, blueY, 40);
+    ctx.lineTo(blueX, blueY + blueR);
+    ctx.arcTo(blueX, blueY, blueX + blueR, blueY, blueR);
     ctx.closePath();
     ctx.fill();
 
     // Orange foreground container shape
-    const orangeX = 872;
-    const orangeY = 776;
+    const orangeX = 805;
+    const orangeY = 865;
+    const orangeR = 58;
+
     ctx.fillStyle = PALETTE.ORANGE;
     ctx.beginPath();
-    ctx.moveTo(orangeX + 55, orangeY);
+    ctx.moveTo(orangeX + orangeR, orangeY);
     ctx.lineTo(1080, orangeY);
     ctx.lineTo(1080, 1080);
     ctx.lineTo(orangeX, 1080);
-    ctx.lineTo(orangeX, orangeY + 55);
-    ctx.arcTo(orangeX, orangeY, orangeX + 55, orangeY, 55);
+    ctx.lineTo(orangeX, orangeY + orangeR);
+    ctx.arcTo(orangeX, orangeY, orangeX + orangeR, orangeY, orangeR);
     ctx.closePath();
     ctx.fill();
 
-    // Prompt & Pixel Brand Text inside Orange Container (clean text & block elements)
+    // Clean "Prompt and Pixel" text only (No emblem)
     ctx.fillStyle = '#FFFFFF';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = '700 18px "Plus Jakarta Sans", "Inter", sans-serif';
 
-    // P|d brand mark
-    ctx.font = '800 36px "Plus Jakarta Sans", "Outfit", sans-serif';
-    ctx.fillText('P|d', orangeX + 104, orangeY + 90);
-
-    // "Prompt and Pixel" label text
-    ctx.font = '700 13px "Plus Jakarta Sans", "Inter", sans-serif';
-    ctx.fillText('Prompt and Pixel', orangeX + 104, orangeY + 148);
+    const centerX = orangeX + (1080 - orangeX) / 2;
+    const centerY = orangeY + (1080 - orangeY) / 2;
+    ctx.fillText('Prompt and Pixel', centerX, centerY);
 
     ctx.restore();
   }
