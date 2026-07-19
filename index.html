@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tele-Commerce — Ad Image Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+Myanmar:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EDEAE0; --ink:#1F2A24; --ink-soft:#5B6459;
+    --blue:#2C5F7C; --blue-deep:#1E4356; --gold:#C98A2E; --sage:#4C7A5E;
+    --rule:#D2CBB4; --white:#FBFAF6;
+    --ui-bg:#F7F7F5; --ui-panel:#FFFFFF; --ui-border:#E3E3DF; --ui-text:#2A2A28; --ui-muted:#87867F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--ui-bg); color:var(--ui-text);
+    font-family:'Inter',sans-serif;
+    display:flex; flex-wrap:wrap; min-height:100vh;
+  }
+  .panel{
+    width:380px; flex-shrink:0;
+    background:var(--ui-panel); border-right:1px solid var(--ui-border);
+    padding:32px 28px; min-height:100vh;
+  }
+  .panel h2{ font-family:'Space Grotesk',sans-serif; font-size:19px; margin:0 0 4px; }
+  .panel .tagline{font-size:13px; color:var(--ui-muted); margin-bottom:28px;}
+  label{
+    display:block; font-size:12px; font-weight:600; letter-spacing:0.03em;
+    text-transform:uppercase; color:var(--ui-muted); margin-bottom:8px; margin-top:24px;
+  }
+  label:first-of-type{margin-top:0;}
+  textarea, input[type=text]{
+    width:100%; font-family:'Inter','Noto Sans Myanmar',sans-serif;
+    font-size:15px; padding:12px 14px; border:1px solid var(--ui-border);
+    border-radius:6px; resize:vertical; background:#FBFBFA; color:var(--ui-text);
+  }
+  textarea{min-height:78px; line-height:1.5;}
+  textarea:focus, input:focus{outline:2px solid var(--blue); outline-offset:1px; border-color:var(--blue);}
+  .tpl-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px; }
+  .tpl-choice{
+    border:2px solid var(--ui-border); border-radius:6px; padding:10px 8px;
+    cursor:pointer; text-align:center; background:#FBFBFA;
+    font-size:12px; font-weight:600; color:var(--ui-muted);
+    transition:border-color .12s ease, color .12s ease;
+  }
+  .tpl-choice .swatch{ width:100%; height:36px; border-radius:4px; margin-bottom:8px; }
+  .tpl-choice.active{ border-color:var(--blue-deep); color:var(--ink); }
+  .tpl-choice:focus-visible{outline:2px solid var(--blue); outline-offset:2px;}
+  .export-btn{
+    margin-top:32px; width:100%; padding:15px; border:none; border-radius:6px;
+    background:var(--blue-deep); color:var(--white); font-family:'Space Grotesk',sans-serif;
+    font-weight:600; font-size:15px; cursor:pointer;
+  }
+  .export-btn:hover{background:var(--blue);}
+  .export-btn:disabled{opacity:0.6; cursor:default;}
+  .hint{font-size:12px; color:var(--ui-muted); margin-top:10px; line-height:1.5;}
+  .stage-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding:40px; min-width:320px; }
+  #previewCanvas{
+    width:460px; height:460px;
+    box-shadow:0 12px 40px -14px rgba(30,67,86,0.28);
+    background:#EDEAE0;
+  }
+  @media (max-width:860px){
+    body{flex-direction:column;}
+    .panel{width:100%; min-height:auto; border-right:none; border-bottom:1px solid var(--ui-border);}
+    .stage-wrap{padding:24px;}
+    #previewCanvas{width:340px; height:340px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="panel">
+  <h2>Ad Image Generator</h2>
+  <div class="tagline">Tele-Commerce brand templates — headline + CTA in, PNG out</div>
+
+  <label for="headlineInput">Headline</label>
+  <textarea id="headlineInput" placeholder="Order စာရင်း&#10;ရှုပ်နေပြီလား?">Order စာရင်း
+ရှုပ်နေပြီလား?</textarea>
+
+  <label for="sizeSlider">Headline Size <span id="sizeValueLabel" style="text-transform:none; font-weight:400; color:var(--ui-text);">100%</span></label>
+  <input type="range" id="sizeSlider" min="50" max="160" value="100" style="width:100%; accent-color:#1E4356;">
+
+  <label for="ctaInput">Call to Action</label>
+  <input type="text" id="ctaInput" value="Tele-Commerce ကိုဖွင့်ပါ →">
+
+  <label>Template</label>
+  <div class="tpl-grid" id="tplGrid">
+    <div class="tpl-choice active" data-tpl="1" tabindex="0"><div class="swatch" style="background:linear-gradient(135deg,#EDEAE0,#C98A2E)"></div>Problem</div>
+    <div class="tpl-choice" data-tpl="2" tabindex="0"><div class="swatch" style="background:linear-gradient(135deg,#EDEAE0,#1E4356)"></div>Offer</div>
+    <div class="tpl-choice" data-tpl="3" tabindex="0"><div class="swatch" style="background:linear-gradient(135deg,#EDEAE0,#4C7A5E)"></div>Trust</div>
+    <div class="tpl-choice" data-tpl="4" tabindex="0"><div class="swatch" style="background:linear-gradient(135deg,#C98A2E,#EDEAE0)"></div>Urgency</div>
+    <div class="tpl-choice" data-tpl="5" tabindex="0"><div class="swatch" style="background:linear-gradient(135deg,#1E4356,#EDEAE0)"></div>Identity</div>
+    <div class="tpl-choice" data-tpl="6" tabindex="0"><div class="swatch" style="background:linear-gradient(135deg,#FBFAF6,#4C7A5E)"></div>Ticket</div>
+  </div>
+
+  <button class="export-btn" id="exportBtn">Export PNG (1080×1080)</button>
+  <div class="hint">Drawn directly on canvas (no screenshot step), so text always renders cleanly — what you see in the preview is exactly what exports.</div>
+</div>
+
+<div class="stage-wrap">
+  <canvas id="previewCanvas" width="1080" height="1080"></canvas>
+</div>
+
+<script>
+  const headlineInput = document.getElementById('headlineInput');
+  const ctaInput = document.getElementById('ctaInput');
+  const tplGrid = document.getElementById('tplGrid');
+  const exportBtn = document.getElementById('exportBtn');
+  const sizeSlider = document.getElementById('sizeSlider');
+  const sizeValueLabel = document.getElementById('sizeValueLabel');
+  const previewCanvas = document.getElementById('previewCanvas');
+  const ctx = previewCanvas.getContext('2d');
+
+  let currentTpl = '1';
+  let fontsReady = false;
+
+  const COLORS = {
+    PAPER:'#EDEAE0', INK:'#1F2A24', INK_SOFT:'#5B6459',
+    BLUE_DEEP:'#1E4356', GOLD:'#C98A2E', SAGE:'#4C7A5E',
+    RULE:'#D2CBB4', WHITE:'#FBFAF6'
+  };
+  const MARGIN = 92;
+  const HEAD_BASE = {1:64, 2:64, 3:64, 4:72, 5:64, 6:56};
+
+  function setFont(weight, size, family){
+    family = family || 'Space Grotesk';
+    ctx.font = weight + ' ' + size + "px '" + family + "', 'Noto Sans Myanmar', sans-serif";
+  }
+
+  function wrapLines(text, maxWidth){
+    const paragraphs = text.split('\n');
+    const lines = [];
+    paragraphs.forEach(p => {
+      if(p === ''){ lines.push(''); return; }
+      const words = p.split(' ');
+      let current = '';
+      words.forEach(w => {
+        const test = current ? current + ' ' + w : w;
+        if(ctx.measureText(test).width > maxWidth && current){
+          lines.push(current);
+          current = w;
+        } else {
+          current = test;
+        }
+      });
+      if(current) lines.push(current);
+    });
+    return lines;
+  }
+
+  function drawWordmark(x, y, dotColor){
+    ctx.fillStyle = dotColor;
+    ctx.beginPath();
+    ctx.arc(x + 5, y + 11, 5, 0, Math.PI * 2);
+    ctx.fill();
+    setFont(700, 22);
+    ctx.fillStyle = COLORS.INK;
+    ctx.fillText('Tele-Commerce', x + 20, y);
+  }
+
+  function spacedWidth(text, spacing){
+    let w = 0;
+    for(const ch of text){ w += ctx.measureText(ch).width + spacing; }
+    return w > 0 ? w - spacing : 0;
+  }
+  function drawSpaced(text, x, y, spacing){
+    let cx = x;
+    for(const ch of text){
+      ctx.fillText(ch, cx, y);
+      cx += ctx.measureText(ch).width + spacing;
+    }
+  }
+
+  function drawEyebrow(text, x, y, color, centerX){
+    setFont(400, 20, 'JetBrains Mono');
+    ctx.fillStyle = color;
+    const spacing = 2.2;
+    const textW = spacedWidth(text, spacing);
+    const lineW = 34, gap = 12;
+    let startX = x;
+    if(centerX !== undefined){
+      const totalW = lineW + gap + textW;
+      startX = centerX - totalW / 2 + lineW + gap;
+    }
+    ctx.fillRect(startX - lineW - gap, y + 9, lineW, 2);
+    drawSpaced(text, startX, y, spacing);
+  }
+
+  function drawHeadline(lines, x, y, lineHeight, opts){
+    opts = opts || {};
+    const align = opts.align || 'left';
+    const color = opts.color || COLORS.INK;
+    lines.forEach((line, i) => {
+      const w = ctx.measureText(line).width;
+      let lx = x;
+      if(align === 'center') lx = x - w / 2;
+      if(opts.highlight){
+        ctx.fillStyle = opts.highlight;
+        ctx.fillRect(lx - 4, y + i * lineHeight + lineHeight * 0.58, w + 8, lineHeight * 0.38);
+      }
+      ctx.fillStyle = color;
+      ctx.fillText(line, lx, y + i * lineHeight);
+    });
+    return y + lines.length * lineHeight;
+  }
+
+  function drawCtaPill(text, opts){
+    setFont(opts.weight || 600, opts.fontSize || 26);
+    const textW = ctx.measureText(text).width;
+    const padX = opts.padX || 34, padY = opts.padY || 20;
+    const fontSize = opts.fontSize || 26;
+    const w = textW + padX * 2;
+    const h = fontSize + padY * 2 - 4;
+    let x = opts.x;
+    if(opts.align === 'right') x = opts.x - w;
+    if(opts.align === 'center') x = opts.x - w / 2;
+    const y = opts.y;
+    ctx.fillStyle = opts.bg;
+    ctx.fillRect(x, y, w, h);
+    ctx.fillStyle = opts.color || COLORS.WHITE;
+    ctx.fillText(text, x + padX, y + padY - 2);
+    return { x: x, y: y, w: w, h: h };
+  }
+
+  function render(tpl, headline, cta, sizePct){
+    ctx.clearRect(0, 0, 1080, 1080);
+    ctx.textBaseline = 'top';
+    ctx.fillStyle = COLORS.PAPER;
+    ctx.fillRect(0, 0, 1080, 1080);
+
+    const headSize = Math.round((HEAD_BASE[tpl] || 64) * sizePct / 100);
+    const lineHeight = Math.round(headSize * 1.3);
+
+    if(tpl === '1'){
+      drawWordmark(MARGIN, 88, COLORS.GOLD);
+      drawEyebrow('PROBLEM', MARGIN + 46, 212, COLORS.GOLD);
+      setFont(700, headSize);
+      const lines = wrapLines(headline, 840);
+      const endY = drawHeadline(lines, MARGIN, 262, lineHeight);
+      drawCtaPill(cta, { x: MARGIN, y: endY + 50, bg: COLORS.BLUE_DEEP, color: COLORS.WHITE, align: 'left' });
+    }
+    else if(tpl === '2'){
+      drawWordmark(MARGIN, 88, COLORS.BLUE_DEEP);
+      drawEyebrow('OFFER', MARGIN + 46, 212, COLORS.BLUE_DEEP);
+      setFont(700, headSize);
+      const lines = wrapLines(headline, 840);
+      const endY = drawHeadline(lines, MARGIN, 262, lineHeight);
+      drawCtaPill(cta, { x: MARGIN, y: endY + 50, bg: COLORS.BLUE_DEEP, color: COLORS.WHITE, align: 'left', fontSize: 30, padX: 44, padY: 24 });
+    }
+    else if(tpl === '3'){
+      drawWordmark(540 - 78, 88, COLORS.SAGE);
+      drawEyebrow('TRUST', 0, 420, COLORS.SAGE, 540);
+      setFont(700, headSize);
+      const lines = wrapLines(headline, 820);
+      const endY = drawHeadline(lines, 540, 470, lineHeight, { align: 'center' });
+      drawCtaPill(cta, { x: 540, y: endY + 50, bg: COLORS.SAGE, color: COLORS.WHITE, align: 'center' });
+    }
+    else if(tpl === '4'){
+      drawWordmark(MARGIN, 88, COLORS.GOLD);
+      setFont(700, headSize);
+      const lines = wrapLines(headline, 880);
+      const endY = drawHeadline(lines, MARGIN, 300, lineHeight, { highlight: 'rgba(201,138,46,0.32)' });
+      drawCtaPill(cta, { x: MARGIN, y: endY + 50, bg: COLORS.GOLD, color: COLORS.INK, align: 'left' });
+    }
+    else if(tpl === '5'){
+      drawWordmark(MARGIN, 88, COLORS.BLUE_DEEP);
+      setFont(700, headSize);
+      const lines = wrapLines(headline, 820);
+      const endY = drawHeadline(lines, MARGIN, 250, lineHeight);
+      ctx.fillStyle = COLORS.RULE;
+      ctx.globalAlpha = 0.6;
+      for(let y = 88; y < 992; y += 16){ ctx.fillRect(1080 - MARGIN, y, 1, 8); }
+      ctx.globalAlpha = 1;
+      drawCtaPill(cta, { x: 1080 - MARGIN, y: endY + 50, bg: COLORS.BLUE_DEEP, color: COLORS.WHITE, align: 'right' });
+    }
+    else if(tpl === '6'){
+      setFont(700, headSize);
+      const lines = wrapLines(headline, 632);
+      const eyebrowBlockH = 46;
+      const headlineH = lines.length * lineHeight;
+      const ctaBlockH = 66;
+      const cardPadTop = 70, cardPadBottom = 86, gapAfterEyebrow = 8, gapAfterHeadline = 40;
+      const cardH = cardPadTop + eyebrowBlockH + gapAfterEyebrow + headlineH + gapAfterHeadline + ctaBlockH + cardPadBottom;
+      const cardW = 760;
+      const cardX = (1080 - cardW) / 2;
+      const cardY = (1080 - cardH) / 2;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(30,67,86,0.30)';
+      ctx.shadowBlur = 50;
+      ctx.shadowOffsetY = 22;
+      ctx.fillStyle = COLORS.WHITE;
+      ctx.fillRect(cardX, cardY, cardW, cardH);
+      ctx.restore();
+
+      ctx.fillStyle = COLORS.PAPER;
+      for(let cx2 = cardX + 11; cx2 < cardX + cardW; cx2 += 22){
+        ctx.beginPath();
+        ctx.arc(cx2, cardY + cardH, 11, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      drawWordmark(MARGIN, 88, COLORS.SAGE);
+      let cy = cardY + cardPadTop;
+      drawEyebrow('TELE-COMMERCE', 0, cy, COLORS.SAGE, 540);
+      cy += eyebrowBlockH + gapAfterEyebrow;
+      setFont(700, headSize);
+      const endY = drawHeadline(lines, 540, cy, lineHeight, { align: 'center' });
+      drawCtaPill(cta, { x: 540, y: endY + gapAfterHeadline, bg: COLORS.BLUE_DEEP, color: COLORS.WHITE, align: 'center' });
+    }
+  }
+
+  function redraw(){
+    if(!fontsReady) return;
+    render(currentTpl, headlineInput.value, ctaInput.value, parseInt(sizeSlider.value, 10));
+  }
+
+  function setTemplate(n){
+    currentTpl = String(n);
+    tplGrid.querySelectorAll('.tpl-choice').forEach(c => {
+      c.classList.toggle('active', c.getAttribute('data-tpl') === currentTpl);
+    });
+    sizeValueLabel.textContent = sizeSlider.value + '%';
+    redraw();
+  }
+
+  headlineInput.addEventListener('input', redraw);
+  ctaInput.addEventListener('input', redraw);
+  sizeSlider.addEventListener('input', () => {
+    sizeValueLabel.textContent = sizeSlider.value + '%';
+    redraw();
+  });
+  tplGrid.addEventListener('click', e => {
+    const choice = e.target.closest('.tpl-choice');
+    if(!choice) return;
+    setTemplate(choice.getAttribute('data-tpl'));
+  });
+  tplGrid.addEventListener('keydown', e => {
+    const choice = e.target.closest('.tpl-choice');
+    if(!choice) return;
+    if(e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      setTemplate(choice.getAttribute('data-tpl'));
+    }
+  });
+
+  async function ensureFontsLoaded(){
+    const specs = [
+      "700 22px 'Space Grotesk'", "700 56px 'Space Grotesk'", "700 64px 'Space Grotesk'",
+      "700 72px 'Space Grotesk'", "600 26px 'Space Grotesk'", "600 30px 'Space Grotesk'",
+      "400 20px 'JetBrains Mono'",
+      "700 56px 'Noto Sans Myanmar'", "700 64px 'Noto Sans Myanmar'", "700 72px 'Noto Sans Myanmar'",
+      "600 26px 'Noto Sans Myanmar'", "600 30px 'Noto Sans Myanmar'", "400 20px 'Noto Sans Myanmar'"
+    ];
+    try{
+      await Promise.all(specs.map(s => document.fonts.load(s)));
+      await document.fonts.ready;
+    } catch(e){ /* proceed with whatever loaded */ }
+    fontsReady = true;
+  }
+
+  ensureFontsLoaded().then(redraw);
+
+  exportBtn.addEventListener('click', async () => {
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Rendering…';
+    try{
+      if(!fontsReady){ await ensureFontsLoaded(); }
+      redraw();
+      const link = document.createElement('a');
+      link.download = 'tele-commerce-ad.png';
+      link.href = previewCanvas.toDataURL('image/png');
+      link.click();
+    } catch(err){
+      alert('Export failed: ' + err.message);
+    } finally {
+      exportBtn.disabled = false;
+      exportBtn.textContent = 'Export PNG (1080×1080)';
+    }
+  });
+</script>
+
+</body>
+</html>
